@@ -1,0 +1,67 @@
+################################################################################
+#                  _             
+#  ___ _ __   __ _| | _____  ___ 
+# / __| '_ \ / _` | |/ / _ \/ __|
+# \__ \ | | | (_| |   <  __/\__ \
+# |___/_| |_|\__,_|_|\_\___||___/
+#
+# P3 Canonical Correlation Analysis
+#                               
+################################################################################
+
+################################################################################
+#
+# General settings
+#
+################################################################################
+
+# analysis name and version
+name: 'p3-cca'
+version: '1.0'
+
+# output directory
+output_dir: 'output'
+
+# random seed
+random_seed: 1
+
+# output verbosity
+verbose: true
+
+################################################################################
+#
+# Datasets
+#
+################################################################################
+datasets:
+  - 'config/rnaseq.yml'
+  - 'config/drug_screen.yml'
+
+################################################################################
+#
+# Training Sets
+#
+################################################################################
+training_sets:
+    features:
+      - 'rnaseq_genes'
+      - 'rnaseq_ccle_sum'
+      - 'rnaseq_nci_nature2016_median'
+      - 'rnaseq_msigdb_c3_tft_v62_median'
+      - 'rnaseq_drugbank_var'
+    response: 'drug_response_final'
+    options:
+      allow_mismatched_indices: false
+      include_column_prefix: true
+
+################################################################################
+#
+# Data integration
+#
+################################################################################
+data_integration:
+  - cca:
+      datasets:
+        - 'drug_response_final'
+        - 'rnaseq_drugbank_final'
+

@@ -1,0 +1,58 @@
+################################################################################
+#
+# P3 Drug Screen Data Configuration
+#
+################################################################################
+
+# General
+name: ac50
+index_col: cell_line
+xid: sample_id
+
+#
+# Path to drug screen data
+#
+path: '/data/projects/nih/p3/drug_response/curves/1.2/bg_adj_curves.csv'
+
+# 
+# Drug screen data processing steps
+#
+actions:
+  - filter_cols_name_in:
+      names: ['drug_id', 'ac50', 'curve_slope']
+  - filter_rows_name_not_in:
+      names: ['KMS21BM_JCRB', 'Karpas417_ECACC', 'OCIMY1_PLB', 'OPM2_DSMZ']
+  #- filter_rows_col_not_na:
+  #    id: 'filter_missing_ac50'
+  #    col: 'ac50'
+  - group:
+      id: 'drug_response_filtered'
+      actions:
+      - filter_rows_col_gt:
+          id: 'filter_curve_slope'
+          col: 'curve_slope'
+          value: 0
+      - filter_rows_group_size_ge:
+          id: 'filter_min_curves_remaining'
+          group: 'drug_id'
+          size: 20 
+      - filter_cols_name_not_in:
+          names: ['curve_slope']
+      - filter_rows_group_func_ge:
+          id: 'filter_min_variability'
+          group: 'drug_id'
+          col: 'ac50'
+          func: 'mad'
+          quantile: 0.5
+  - pivot_wide:
+      index: null
+      columns: 'drug_id'
+      values: 'ac50'
+  - impute_knn
+  - transpose_data
+  - filter_rows_max_correlation:
+      id: 'drug_response_final'
+      cor_method: 'wgcna'
+      cutoff: 0.8
+      verbose: true
+

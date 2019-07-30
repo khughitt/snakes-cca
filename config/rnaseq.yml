@@ -1,0 +1,78 @@
+################################################################################
+#
+# RNA-Seq Configuration
+#
+################################################################################
+
+# General
+name: rnaseq
+xid: symbol
+yid: sample_id
+
+#
+# Path to RNA-Seq count data
+#
+path: '/data/projects/nih/p3/rnaseq/rnaseq_grch38_featurecounts_raw.tsv'
+
+# 
+# RNA-Seq data processing steps
+#
+actions:
+  - filter_cols_name_not_in:
+      id: 'rnaseq_filtered'
+      names: ['KMS21BM_JCRB', 'Karpas417_ECACC', 'OCIMY1_PLB', 'OPM2_DSMZ']
+  - filter_rows_var_gt:
+      id: 'exclude_zero_variance'
+      value: 0
+  - transform_cpm:
+      id: 'rnaseq_genes'
+  - branch:
+    - aggregate_gene_sets:
+        id: 'rnaseq_ccle_sum'
+        gmt: 'gene_sets/Cancer_Cell_Line_Encyclopedia.gmt.gz'
+        data_key: 'symbol'
+        gmt_key: 'symbol'
+        func: 'sum'
+  - branch:
+    - aggregate_gene_sets:
+        id: 'rnaseq_nci_nature2016_median'
+        gmt: 'gene_sets/NCI-Nature_2016.gmt.gz'
+        data_key: 'symbol'
+        gmt_key: 'symbol'
+        func: 'median'
+  - branch:
+    - aggregate_gene_sets:
+        id: 'rnaseq_drugbank_var'
+        gmt: 'gene_sets/Human_DrugBank_all_symbol.gmt.gz'
+        data_key: 'symbol'
+        gmt_key: 'symbol'
+        func: 'var'
+    - filter_rows_max_correlation:
+        id: 'rnaseq_drugbank_final'
+        cor_method: 'wgcna'
+        cutoff: 0.8
+        verbose: true
+  - branch:
+    - aggregate_gene_sets:
+        id: 'rnaseq_msigdb_c3_tft_v62_median'
+        gmt: 'gene_sets/c3.tft.v6.2.symbols.gmt.gz'
+        data_key: 'symbol'
+        gmt_key: 'symbol'
+        func: 'median'
+  - branch:
+    - aggregate_gene_sets:
+        id: 'rnaseq_dsigdb_median'
+        gmt: 'gene_sets/DSigDB.gmt.gz'
+        data_key: 'symbol'
+        gmt_key: 'symbol'
+        func: 'median'
+  - branch:
+    - aggregate_gene_sets:
+        id: 'rnaseq_geo_disease_perturbations_median'
+        gmt: 'gene_sets/Disease_Perturbations_from_GEO_up.gmt.gz'
+        data_key: 'symbol'
+        gmt_key: 'symbol'
+        func: 'median'
+  
+  
+  
